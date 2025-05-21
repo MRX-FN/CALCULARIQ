@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CALCULARIQ</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      text-align: center;
+      padding: 50px;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: repeat(3, 120px);
+      grid-template-rows: auto auto;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .label {
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .box {
+      background-color: #f8f8f8;
+      border-radius: 15px;
+      box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .result-container {
+      margin-top: 40px;
+    }
+
+    .result-box {
+      width: 260px;
+      margin: 0 auto;
+      background-color: #f8f8f8;
+      border-radius: 15px;
+      box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    /* Style untuk history */
+    #history {
+      margin-top: 30px;
+      max-width: 350px;
+      margin-left: auto;
+      margin-right: auto;
+      background-color: #fff;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 3px 3px 8px rgba(0, 0, 0, 0.1);
+      text-align: left;
+      font-size: 14px;
+    }
+
+    #history h3 {
+      margin-top: 0;
+      text-align: center;
+    }
+
+    #history-list p {
+      margin: 4px 0;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 2px;
+    }
+
+    #clear-history-btn {
+      display: block;
+      margin: 10px auto 0 auto;
+      padding: 6px 12px;
+      background-color: #d9534f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #clear-history-btn:hover {
+      background-color: #c9302c;
+    }
+  </style>
+</head>
+<body>
+  <h1>CALCULARIQ</h1>
+  <div class="container">
+    <div>
+      <div class="label"></div>
+      <div class="box"><input type="number" id="angka1" /></div>
+    </div>
+    <div>
+      <div class="label"></div>
+      <div class="box">
+        <select id="operator">
+          <option value="+">+</option>
+          <option value="-">-</option>
+          <option value="*">×</option>
+          <option value="/">÷</option>
+        </select>
+      </div>
+    </div>
+    <div>
+      <div class="label"></div>
+      <div class="box"><input type="number" id="angka2" /></div>
+    </div>
+  </div>
+
+  <div class="result-container">
+    <div class="label">hasil</div>
+    <div class="result-box" id="hasil">0</div>
+  </div>
+
+  <!-- History Section -->
+  <div id="history">
+    <h3>History Perhitungan</h3>
+    <div id="history-list"></div>
+    <button id="clear-history-btn">Clear History</button>
+  </div>
+
+  <script>
+    const angka1 = document.getElementById("angka1");
+    const angka2 = document.getElementById("angka2");
+    const operator = document.getElementById("operator");
+    const hasil = document.getElementById("hasil");
+    const historyList = document.getElementById("history-list");
+    const clearHistoryBtn = document.getElementById("clear-history-btn");
+
+    // Key untuk localStorage
+    const STORAGE_KEY = "calcHistory";
+
+    // Ambil history dari localStorage atau mulai dengan array kosong
+    let history = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    // Tampilkan history yang sudah ada saat halaman dimuat
+    updateHistoryDisplay();
+
+    function hitung() {
+      const a = parseFloat(angka1.value);
+      const b = parseFloat(angka2.value);
+      const op = operator.value;
+
+      if (isNaN(a) || isNaN(b)) {
+        hasil.textContent = "Masukkan angka";
+        return;
+      }
+
+      let res = 0;
+      switch (op) {
+        case "+":
+          res = a + b;
+          break;
+        case "-":
+          res = a - b;
+          break;
+        case "*":
+          res = a * b;
+          break;
+        case "/":
+          res = b !== 0 ? a / b : "Tak hingga";
+          break;
+      }
+
+      hasil.textContent = res;
+
+      // Simpan ke history (hanya jika hasil valid angka)
+      if (typeof res === "number") {
+        addToHistory(`${a} ${op} ${b}`, res);
+      }
+    }
+
+    function addToHistory(expression, result) {
+      const record = `${expression} = ${result}`;
+      history.push(record);
+      saveHistory();
+      updateHistoryDisplay();
+    }
+
+    function updateHistoryDisplay() {
+      historyList.innerHTML = "";
+
+      for (let i = history.length - 1; i >= 0; i--) {
+        const p = document.createElement("p");
+        p.textContent = history[i];
+        historyList.appendChild(p);
+      }
+    }
+
+    function saveHistory() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+    }
+
+    function clearHistory() {
+      history = [];
+      saveHistory();
+      updateHistoryDisplay();
+    }
+
+    angka1.addEventListener("input", hitung);
+    angka2.addEventListener("input", hitung);
+    operator.addEventListener("change", hitung);
+    clearHistoryBtn.addEventListener("click", clearHistory);
+  </script>
+</body>
+</html>
